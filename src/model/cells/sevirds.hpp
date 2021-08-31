@@ -59,6 +59,9 @@ struct sevirds
     unsigned int min_interval_doses;
     unsigned int min_interval_recovery_to_vaccine;
 
+    // Boosters
+    vector<proportionVector> boosters;
+
     unordered_map<string, hysteresis_factor> hysteresis_factors;
     unsigned int num_age_groups;
 
@@ -475,6 +478,18 @@ void from_json(const nlohmann::json &json, sevirds &current_sevirds)
     json.at("immunityD2").get_to(current_sevirds.immunityD2_rate);
     json.at("min_interval_between_doses").get_to(current_sevirds.min_interval_doses);
     json.at("min_interval_between_recovery_and_vaccine").get_to(current_sevirds.min_interval_recovery_to_vaccine);
+
+    try 
+    {
+        vector<vector<double>> buf;
+        int i = 1;
+        while(true)
+        {
+            json.at("booster_"+to_string(i)).get_to(buf);
+            current_sevirds.boosters.push_back(buf);
+            ++i;
+        }
+    } catch (exception e) { }
 
     current_sevirds.num_age_groups = current_sevirds.age_group_proportions.size();
     unsigned int age_groups        = current_sevirds.num_age_groups;
