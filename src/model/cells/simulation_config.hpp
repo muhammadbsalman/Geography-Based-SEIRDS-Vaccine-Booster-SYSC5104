@@ -26,6 +26,11 @@ struct simulation_config
     phase_rates vac1_rates;
     phase_rates vac2_rates;
 
+    vector<phase_rates> boosters_incubation_rates;
+    vector<phase_rates> boosters_recovery_rates;
+    vector<phase_rates> boosters_fatality_rates;
+    vector<phase_rates> boosters_vaccination_rates;
+
     bool reSusceptibility, is_vaccination;
 };
 
@@ -50,6 +55,28 @@ void from_json(const nlohmann::json& json, simulation_config& v)
     json.at("recovery_rates_dose2").get_to(v.recovery_ratesD2);
     json.at("fatality_rates_dose1").get_to(v.fatality_ratesD1);
     json.at("fatality_rates_dose2").get_to(v.fatality_ratesD2);
+
+    try
+    {
+        int i = 1;
+        vector<vector<double>> buf;
+        while(true)
+        {
+            json.at("incubation_rates_booster"+to_string(i)).get_to(buf);
+            v.boosters_incubation_rates.push_back(buf);
+            try
+            {
+                json.at("recovery_rates_booster"+to_string(i)).get_to(buf);
+                v.boosters_recovery_rates.push_back(buf);
+                json.at("fatality_rates_booster"+to_string(i)).get_to(buf);
+                v.boosters_fatality_rates.push_back(buf);
+                json.at("vaccination_rates_booster"+to_string(i)).get_to(buf);
+                v.boosters_vaccination_rates.push_back(buf);
+            }
+            catch (exception &e) { AssertLong(false, __FILE__, __LINE__, "Need fatality, recovery, and vaccination rate lists for booster"+to_string(i)); }
+            ++i;
+        }
+    } catch (exception &e) { }
 
     unsigned int age_groups     = v.recovery_rates.size();
     unsigned int recovery_days  = v.recovery_rates.at(0).size();

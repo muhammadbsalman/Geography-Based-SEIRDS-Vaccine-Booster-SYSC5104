@@ -25,7 +25,8 @@ class AgeData
         {
             NVAC,
             DOSE1,
-            DOSE2
+            DOSE2,
+            BOOSTER
         };
     private:
         // Proportion Vectors for timestep t+1

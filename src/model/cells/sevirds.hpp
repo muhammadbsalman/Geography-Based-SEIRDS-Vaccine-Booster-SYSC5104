@@ -61,6 +61,10 @@ struct sevirds
 
     // Boosters
     vector<proportionVector> boosters;
+    vector<proportionVector> boosters_exposed;
+    vector<proportionVector> boosters_infected;
+    vector<proportionVector> boosters_recovered;
+    vector<proportionVector> boosters_immunity_rates;
 
     unordered_map<string, hysteresis_factor> hysteresis_factors;
     unsigned int num_age_groups;
@@ -479,17 +483,29 @@ void from_json(const nlohmann::json &json, sevirds &current_sevirds)
     json.at("min_interval_between_doses").get_to(current_sevirds.min_interval_doses);
     json.at("min_interval_between_recovery_and_vaccine").get_to(current_sevirds.min_interval_recovery_to_vaccine);
 
-    try 
+    try
     {
         vector<vector<double>> buf;
         int i = 1;
         while(true)
         {
-            json.at("booster_"+to_string(i)).get_to(buf);
+            json.at("booster"+to_string(i)).get_to(buf);
             current_sevirds.boosters.push_back(buf);
+            try
+            {
+                json.at("exposedB"+to_string(i)).get_to(buf);
+                current_sevirds.boosters_exposed.push_back(buf);
+                json.at("infectedB"+to_string(i)).get_to(buf);
+                current_sevirds.boosters_infected.push_back(buf);
+                json.at("recoveredB"+to_string(i)).get_to(buf);
+                current_sevirds.boosters_recovered.push_back(buf);
+                json.at("immunityB"+to_string(i)).get_to(buf);
+                current_sevirds.boosters_immunity_rates.push_back(buf);
+            }
+            catch (exception &e) { AssertLong(false, __FILE__, __LINE__, "Need matching exposed, infected, recovered, and immunity lists for booster"+to_string(i)); }
             ++i;
         }
-    } catch (exception e) { }
+    } catch (exception &e) { }
 
     current_sevirds.num_age_groups = current_sevirds.age_group_proportions.size();
     unsigned int age_groups        = current_sevirds.num_age_groups;

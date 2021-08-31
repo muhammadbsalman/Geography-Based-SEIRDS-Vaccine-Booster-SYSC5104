@@ -57,6 +57,11 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
         phase_rates vac1_rates;
         phase_rates vac2_rates;
 
+        vector<phase_rates> boosters_incubation_rates;
+        vector<phase_rates> boosters_recovery_rates;
+        vector<phase_rates> boosters_fatality_rates;
+        vector<phase_rates> boosters_vaccination_rates;
+
         // To make the parameters of the correction_factors variable more obvious
         using infection_threshold        = float;
         using mobility_correction_factor = array<float, 2>;  // array<mobility correction factor, hysteresis factor>;
@@ -107,6 +112,14 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
 
                 fatalityD1_rates = move(config.fatality_ratesD1);
                 fatalityD2_rates = move(config.fatality_ratesD2);
+
+                boosters_incubation_rates  = move(config.boosters_incubation_rates);
+                boosters_recovery_rates    = move(config.boosters_recovery_rates);
+                boosters_fatality_rates    = move(config.boosters_fatality_rates);
+                boosters_vaccination_rates = move(config.boosters_vaccination_rates);
+                unsigned int num_boosters  = initial_state.boosters.size();
+                AssertLong(boosters_incubation_rates.size() == num_boosters || boosters_recovery_rates.size() == num_boosters || boosters_fatality_rates.size() == num_boosters || boosters_vaccination_rates.size() == num_boosters,
+                            __FILE__, __LINE__, "Error attempting to set incubation, recovery, fatality, and/or vaccination rates.\nVerify that each booster shot has matching rates in  default.json");
             }
         }
 
@@ -138,6 +151,13 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             {
                 datas.push_back(&age_data_vac1);
                 datas.push_back(&age_data_vac2);
+
+                // Add the boosters
+                for (unsigned int i = 0; i < res.boosters.size(); ++i)
+                {
+                    unique_ptr<AgeData>* booster = new unique_ptr<AgeData>();
+                    datas.push_back(booster);
+                }
             }
 
             // Global new susceptible variable as the other equations
@@ -166,6 +186,15 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                                                     res.recoveredD2, incubationD2_rates, recoveryD2_rates,
                                                     fatalityD2_rates, vac2_rates.at(age_segment_index),
                                                     res.immunityD2_rate.at(age_segment_index), AgeData::PopType::DOSE2));
+
+                    // Init the boosters and their age relevant data
+                    for (unsigned int i = 0; i < res.boosters.size(); ++i)
+                    {
+                        datas.at(i+3)->reset(new AgeData(age_segment_index, res.boosters.at(i), res.boosters_exposed.at(i), res.boosters_infected.at(i),
+                                                    res.boosters_recovered.at(i), boosters_incubation_rates.at(i), boosters_recovery_rates.at(i),
+                                                    boosters_fatality_rates.at(i), boosters_vaccination_rates.at(i).at(age_segment_index),
+                                                    res.boosters_immunity_rates.at(i).at(age_segment_index), AgeData::PopType::BOOSTER));
+                    }
 
                     // Equations for Vaccinated population (eg. EV1, RV2...)
                     sanity_check(res.get_total_susceptible(true, age_segment_index), __LINE__);
@@ -725,6 +754,9 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
 
             for (unique_ptr<AgeData>* age_data : datas)
             {
+                if (age_data->get()->GetType() == AgeData::PopType::BOOSTER)
+                    continue; // TODO: Handle booster shots
+
                 // <FATALITIES>
                     // Calculates the new fatalities on each day of the infected phase
                     // for easy use and less repetive code later
