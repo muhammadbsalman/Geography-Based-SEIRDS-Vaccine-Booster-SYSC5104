@@ -1,8 +1,8 @@
-Cell-DEVS Geographical SEIRDS-Vaccinated Pandemic Model
+Cell-DEVS Geographical SEVIRDS-Booster Pandemic Model
 ===
 Overview
 ----
-This model is an extension of a previous [SEIRDS model](https://github.com/SimulationEverywhere-Models/Geography-Based-SEIRDS) and
+This model is an extension of a previous [SEVIRDS model](https://github.com/SimulationEverywhere-Models/Geography-Based-SEIRDS-Vaccinated) and
 is based on the [Zhong model](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7088542/pdf/11430_2009_Article_44.pdf).
 <br>_Follow below for steps on just running the simulator. Consult the [Wiki](https://github.com/SimulationEverywhere-Models/Geography-Based-SEIRDS-Vaccinated/wiki) for compiling and running it_
 
