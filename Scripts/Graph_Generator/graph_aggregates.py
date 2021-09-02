@@ -9,7 +9,6 @@
 import itertools, threading, time, sys, os, re
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
 import shutil
 import random
 
@@ -99,7 +98,7 @@ total_pop   = {}
 def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
     total_S = total_E = total_VD1 = total_VD2 = total_I = total_R = total_D = 0
     new_E = new_I = new_R = total_S
-    total_B   = {}
+    total_B = {}
     percent_B = {}
 
     # Sum the number of S,E,V,I,R,D persons in all cells
@@ -113,12 +112,11 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
         total_R   += round(cell_population*(curr_states[key][rIndex]))
         total_D   += round(cell_population*(curr_states[key][dIndex]))
 
-        if num_boosters > 0:
-            for booster in range(0, num_boosters):
-                if booster in total_B:
-                    total_B[booster] += round(cell_population*(curr_states[key][bIndex+booster]))
-                else:
-                    total_B[booster] = round(cell_population*(curr_states[key][bIndex+booster]))
+        for booster in range(0, num_boosters):
+            if booster in total_B:
+                total_B[booster] += round(cell_population*(curr_states[key][bIndex+booster]))
+            else:
+                total_B[booster] = round(cell_population*(curr_states[key][bIndex+booster]))
 
         new_E += round(cell_population*(curr_states[key][neweIndex]))
         new_I += round(cell_population*(curr_states[key][newiIndex]))
@@ -144,9 +142,8 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
     assert 0.95 <= psum < 1.05, ("at time " + str(curr_time))
 
     array = [int(sim_time), percent_S, percent_E, percent_VD1, percent_VD2, percent_I, percent_R, percent_new_E, percent_new_I, percent_new_R, percent_D]
-    if num_boosters > 0:
-        for booster in range(0, num_boosters):
-            array.append(percent_B[booster])
+    for booster in range(0, num_boosters):
+        array.append(percent_B[booster])
     array.append(psum)
     return array
 
@@ -207,13 +204,6 @@ try:
 
             data.append(curr_states_to_df_row(curr_time, curr_states, sum(total_pop.values()), num_boosters))
 
-        font = {"family" : "DejaVu Sans",
-                "weight" : "normal",
-                "size"   : 16}
-
-        matplotlib.rc("font", **font)
-        matplotlib.rc("lines", linewidth=2)
-
         try:
             os.makedirs(path)
         except OSError as error:
@@ -226,11 +216,10 @@ try:
 
         columns = ["time", "susceptible", "exposed", "vaccinatedD1", "vaccinatedD2", "infected",
                     "recovered", "new_exposed", "new_infected", "new_recovered", "deaths"]
-        if num_boosters > 0:
-            for booster in range(0, num_boosters):
-                columns.append("booster"+str(booster))
-                COLOR_BOOSTERS[booster] = "#%06x" % random.randint(0, 0xFFFFFF)
-                LINE_BOOSTERS[booster]  = random.choice(line_styles)
+        for booster in range(0, num_boosters):
+            columns.append("booster"+str(booster))
+            COLOR_BOOSTERS[booster] = "#%06x" % random.randint(0, 0xFFFFFF)
+            LINE_BOOSTERS[booster]  = random.choice(line_styles)
         columns.append("error")
         df_vis = pd.DataFrame(data, columns=columns)
         df_vis = df_vis.set_index("time")
@@ -257,11 +246,10 @@ try:
         if not (sum(df_vis['vaccinatedD1']) == 0 and sum(df_vis['vaccinatedD2']) == 0):
             ax.plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=line_styles[SOLID])
             ax.plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=line_styles[DASHED])
-            if num_boosters > 0:
-                for booster in range(0, num_boosters):
-                    ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
-                            color=COLOR_BOOSTERS[booster],
-                            linestyle=LINE_BOOSTERS[booster])
+            for booster in range(0, num_boosters):
+                ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
+                        color=COLOR_BOOSTERS[booster],
+                        linestyle=LINE_BOOSTERS[booster])
             plt.title("Epidemic Aggregate SEVIRD Percentages")
         else:
             plt.title("Epidemic Aggregate SEIR+D Percentages")
@@ -277,6 +265,7 @@ try:
             plt.savefig(base_name + "SEVIRD.png")
         else:
             plt.savefig(base_name + "SEIR+D.png")
+        plt.close(fig)
 
         ### --- EID --- ###
         fig, ax = plt.subplots(figsize=(15, 6))
@@ -297,11 +286,10 @@ try:
         if not (sum(df_vis['vaccinatedD1']) == 0 and sum(df_vis['vaccinatedD2']) == 0) and num_boosters > 0:
             ax.plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=line_styles[SOLID])
             ax.plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=line_styles[DASHED])
-            if num_boosters > 0:
-                for booster in range(0, num_boosters):
-                    ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
-                            color=COLOR_BOOSTERS[booster],
-                            linestyle=LINE_BOOSTERS[booster])
+            for booster in range(0, num_boosters):
+                ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
+                        color=COLOR_BOOSTERS[booster],
+                        linestyle=LINE_BOOSTERS[booster])
             plt.title("Epidemic Aggregate Vaccine Percentages")
             plt.ylabel("Population (%)")
             plt.xlabel("Time (days)")
