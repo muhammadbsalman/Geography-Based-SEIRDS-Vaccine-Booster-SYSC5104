@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 import shutil
+import random
 
 progress = True
 log_file_folder = ""
@@ -72,6 +73,7 @@ neweIndex = 7
 newiIndex = 8
 newrIndex = 9
 dIndex    = 10
+bIndex    = 11
 
 COLOR_SUSCEPTIBLE = 'xkcd:blue'
 COLOR_INFECTED    = 'xkcd:red'
@@ -80,34 +82,43 @@ COLOR_DOSE1       = '#B91FDE'
 COLOR_DOSE2       = '#680D5A'
 COLOR_RECOVERED   = 'xkcd:green'
 COLOR_DEAD        = 'xkcd:black'
+COLOR_BOOSTERS    = {}
 
-STYLE_SUSCEPTIBLE = '-'
-STYLE_INFECTED    = '--'
-STYLE_EXPOSED     = '-.'
-STYLE_DOSE1       = 'solid'
-STYLE_DOSE2       = 'dashed'
-STYLE_RECOVERED   = ':'
-STYLE_DEAD        = 'solid'
+line_styles = ['-', '--', '-.', ':']
+SOLID    = 0
+DASHED   = 1
+DOT_DASH = 2
+DOTTED   = 3
+LINE_BOOSTERS = {}
 
 data        = []
 curr_time   = None
 curr_states = {}
 total_pop   = {}
 
-def curr_states_to_df_row(sim_time, curr_states, total_pop):
+def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
     total_S = total_E = total_VD1 = total_VD2 = total_I = total_R = total_D = 0
     new_E = new_I = new_R = total_S
+    total_B   = {}
+    percent_B = {}
 
     # Sum the number of S,E,V,I,R,D persons in all cells
     for key in curr_states:
         cell_population = curr_states[key][0]
-        total_S     += round(cell_population*(curr_states[key][sIndex]))
-        total_E     += round(cell_population*(curr_states[key][eIndex]))
-        total_VD1   += round(cell_population*(curr_states[key][vd1Index]))
-        total_VD2   += round(cell_population*(curr_states[key][vd2Index]))
-        total_I     += round(cell_population*(curr_states[key][iIndex]))
-        total_R     += round(cell_population*(curr_states[key][rIndex]))
-        total_D     += round(cell_population*(curr_states[key][dIndex]))
+        total_S   += round(cell_population*(curr_states[key][sIndex]))
+        total_E   += round(cell_population*(curr_states[key][eIndex]))
+        total_VD1 += round(cell_population*(curr_states[key][vd1Index]))
+        total_VD2 += round(cell_population*(curr_states[key][vd2Index]))
+        total_I   += round(cell_population*(curr_states[key][iIndex]))
+        total_R   += round(cell_population*(curr_states[key][rIndex]))
+        total_D   += round(cell_population*(curr_states[key][dIndex]))
+
+        if num_boosters > 0:
+            for booster in range(0, num_boosters):
+                if booster in total_B:
+                    total_B[booster] += round(cell_population*(curr_states[key][bIndex+booster]))
+                else:
+                    total_B[booster] = round(cell_population*(curr_states[key][bIndex+booster]))
 
         new_E += round(cell_population*(curr_states[key][neweIndex]))
         new_I += round(cell_population*(curr_states[key][newiIndex]))
@@ -122,6 +133,9 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop):
     percent_R   = total_R   / total_pop
     percent_D   = total_D   / total_pop
 
+    for booster in range(0, num_boosters):
+        percent_B[booster] = total_B[booster] / total_pop
+
     percent_new_E = new_E / total_pop
     percent_new_I = new_I / total_pop
     percent_new_R = new_R / total_pop
@@ -129,10 +143,17 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop):
 
     assert 0.95 <= psum < 1.05, ("at time " + str(curr_time))
 
-    return [int(sim_time), percent_S, percent_E, percent_VD1, percent_VD2, percent_I, percent_R, percent_new_E, percent_new_I, percent_new_R, percent_D, psum]
+    array = [int(sim_time), percent_S, percent_E, percent_VD1, percent_VD2, percent_I, percent_R, percent_new_E, percent_new_I, percent_new_R, percent_D]
+    if num_boosters > 0:
+        for booster in range(0, num_boosters):
+            array.append(percent_B[booster])
+    array.append(psum)
+    return array
 
 try:
     if __name__ == "__main__":
+        num_boosters = -1
+
         # Read the data of all regions and their names
         with open(log_filename, "r") as log_file:
             # Read the file twice
@@ -150,7 +171,16 @@ try:
                     # If a time marker is found that is not the current time
                     if line.isnumeric() and line != curr_time:
                         if curr_states and i == 1:
-                            data.append(curr_states_to_df_row(curr_time, curr_states, sum(list(total_pop.values()))))
+                            if num_boosters == -1:
+                                num_boosters = 0
+                                try:
+                                    while True:
+                                        list(curr_states.values())[0][bIndex+num_boosters]
+                                        num_boosters += 1
+                                except Exception:
+                                    pass
+
+                            data.append(curr_states_to_df_row(curr_time, curr_states, sum(list(total_pop.values())), num_boosters))
 
                         # Update new simulation time
                         curr_time = line
@@ -175,7 +205,7 @@ try:
 
                     line_num += 1
 
-            data.append(curr_states_to_df_row(curr_time, curr_states, sum(total_pop.values())))
+            data.append(curr_states_to_df_row(curr_time, curr_states, sum(total_pop.values()), num_boosters))
 
         font = {"family" : "DejaVu Sans",
                 "weight" : "normal",
@@ -195,7 +225,13 @@ try:
                 out_file.write(str(timestep).strip('[]')+"\n")
 
         columns = ["time", "susceptible", "exposed", "vaccinatedD1", "vaccinatedD2", "infected",
-                    "recovered", "new_exposed", "new_infected", "new_recovered", "deaths", "error"]
+                    "recovered", "new_exposed", "new_infected", "new_recovered", "deaths"]
+        if num_boosters > 0:
+            for booster in range(0, num_boosters):
+                columns.append("booster"+str(booster))
+                COLOR_BOOSTERS[booster] = "#%06x" % random.randint(0, 0xFFFFFF)
+                LINE_BOOSTERS[booster]  = random.choice(line_styles)
+        columns.append("error")
         df_vis = pd.DataFrame(data, columns=columns)
         df_vis = df_vis.set_index("time")
         df_vis.to_csv(log_file_folder+"/states.csv")
@@ -205,9 +241,9 @@ try:
         ### --- New EIR --- ###
         fig, ax = plt.subplots(figsize=(15,6))
 
-        ax.plot(x, 100*df_vis["new_exposed"],   label="New exposed",   color=COLOR_EXPOSED,   linestyle=STYLE_EXPOSED)
-        ax.plot(x, 100*df_vis["new_infected"],  label="New infected",  color=COLOR_INFECTED,  linestyle=STYLE_INFECTED)
-        ax.plot(x, 100*df_vis["new_recovered"], label="New recovered", color=COLOR_RECOVERED, linestyle=STYLE_RECOVERED)
+        ax.plot(x, 100*df_vis["new_exposed"],   label="New exposed",   color=COLOR_EXPOSED,   linestyle=line_styles[DOT_DASH])
+        ax.plot(x, 100*df_vis["new_infected"],  label="New infected",  color=COLOR_INFECTED,  linestyle=line_styles[DASHED])
+        ax.plot(x, 100*df_vis["new_recovered"], label="New recovered", color=COLOR_RECOVERED, linestyle=line_styles[DOTTED])
         plt.legend(loc="upper right")
         plt.title("Epidemic Aggregate New EIR Percentages")
         plt.xlabel("Time (days)")
@@ -215,33 +251,62 @@ try:
         plt.savefig(base_name + "New_EIR.png")
 
         ### --- SEIRD/SEVIRD --- ###
-        fig, axs = plt.subplots(2, figsize=(15,6))
+        fig, ax = plt.subplots(figsize=(15,6))
 
-        axs[0].plot(x, 100*df_vis["susceptible"], label="Susceptible", color=COLOR_SUSCEPTIBLE, linestyle=STYLE_SUSCEPTIBLE)
+        ax.plot(x, 100*df_vis["susceptible"], label="Susceptible", color=COLOR_SUSCEPTIBLE, linestyle=line_styles[SOLID])
         if not (sum(df_vis['vaccinatedD1']) == 0 and sum(df_vis['vaccinatedD2']) == 0):
-            axs[0].plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=STYLE_DOSE1)
-            axs[0].plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=STYLE_DOSE2)
-            axs[0].set_title("Epidemic Aggregate SEVIRD Percentages")
+            ax.plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=line_styles[SOLID])
+            ax.plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=line_styles[DASHED])
+            if num_boosters > 0:
+                for booster in range(0, num_boosters):
+                    ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
+                            color=COLOR_BOOSTERS[booster],
+                            linestyle=LINE_BOOSTERS[booster])
+            plt.title("Epidemic Aggregate SEVIRD Percentages")
         else:
-            axs[0].set_title("Epidemic Aggregate SEIR+D Percentages")
+            plt.title("Epidemic Aggregate SEIR+D Percentages")
 
-        axs[0].plot(x, 100*df_vis["exposed"],   label="Exposed",   color=COLOR_EXPOSED,   linestyle=STYLE_EXPOSED)
-        axs[0].plot(x, 100*df_vis["infected"],  label="Infected",  color=COLOR_INFECTED,  linestyle=STYLE_INFECTED)
-        axs[0].plot(x, 100*df_vis["recovered"], label="Recovered", color=COLOR_RECOVERED, linestyle=STYLE_RECOVERED)
-        axs[0].set_ylabel("Population (%)")
-        axs[0].legend(loc="upper right")
-
-        axs[1].plot(x, 100*df_vis["deaths"],   label="Deaths",   color=COLOR_DEAD,     linestyle=STYLE_DEAD)
-        axs[1].plot(x, 100*df_vis["exposed"],  label="Exposed",  color=COLOR_EXPOSED,  linestyle=STYLE_EXPOSED)
-        axs[1].plot(x, 100*df_vis["infected"], label="Infected", color=COLOR_INFECTED, linestyle=STYLE_INFECTED)
-        axs[1].set_xlabel("Time (days)")
-        axs[1].set_ylabel("Population (%)")
-        axs[1].legend(loc="upper right")
+        ax.plot(x, 100*df_vis["exposed"],   label="Exposed",   color=COLOR_EXPOSED,   linestyle=line_styles[DOT_DASH])
+        ax.plot(x, 100*df_vis["infected"],  label="Infected",  color=COLOR_INFECTED,  linestyle=line_styles[DASHED])
+        ax.plot(x, 100*df_vis["recovered"], label="Recovered", color=COLOR_RECOVERED, linestyle=line_styles[DOTTED])
+        plt.ylabel("Population (%)")
+        plt.xlabel("Time (days)")
+        plt.legend(loc="upper right")
 
         if not (sum(df_vis['vaccinatedD1']) == 0 and sum(df_vis['vaccinatedD2']) == 0):
             plt.savefig(base_name + "SEVIRD.png")
         else:
             plt.savefig(base_name + "SEIR+D.png")
+
+        ### --- EID --- ###
+        fig, ax = plt.subplots(figsize=(15, 6))
+
+        ax.plot(x, 100*df_vis["deaths"],   label="Deaths",
+                color=COLOR_DEAD,     linestyle=line_styles[SOLID])
+        ax.plot(x, 100*df_vis["exposed"],  label="Exposed",
+                color=COLOR_EXPOSED,  linestyle=line_styles[DOT_DASH])
+        ax.plot(x, 100*df_vis["infected"], label="Infected",
+                color=COLOR_INFECTED, linestyle=line_styles[DASHED])
+        plt.title("Epidemic Aggregate EID Percentages")
+        plt.xlabel("Time (days)")
+        plt.ylabel("Population (%)")
+        plt.legend(loc="upper right")
+        plt.savefig(base_name + "EID.png")
+
+        fig, ax = plt.subplots(figsize=(15, 6))
+        if not (sum(df_vis['vaccinatedD1']) == 0 and sum(df_vis['vaccinatedD2']) == 0) and num_boosters > 0:
+            ax.plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=line_styles[SOLID])
+            ax.plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=line_styles[DASHED])
+            if num_boosters > 0:
+                for booster in range(0, num_boosters):
+                    ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
+                            color=COLOR_BOOSTERS[booster],
+                            linestyle=LINE_BOOSTERS[booster])
+            plt.title("Epidemic Aggregate Vaccine Percentages")
+            plt.ylabel("Population (%)")
+            plt.xlabel("Time (days)")
+            plt.legend(loc="upper right")
+            plt.savefig(base_name + "Vaccines.png")
 
         if not progress:
             print("\033[1;32mDone.\033[0m")
@@ -272,4 +337,3 @@ except Exception as error:
         t.join()
 
     print("\n\033[31m" + str(error) + "\033[0m")
-    sys.exit(-1)

@@ -158,6 +158,9 @@ struct sevirds
                 {
                     total_susceptible += sum_state_vector(vaccinatedD1.at(i)) * age_group_proportions.at(i);
                     total_susceptible += sum_state_vector(vaccinatedD2.at(i)) * age_group_proportions.at(i);
+
+                    for (unsigned int j = 0; j < boosters.size(); ++j)
+                        total_susceptible += sum_state_vector(boosters.at(j).at(i)) * age_group_proportions.at(i);
                 }
             }
         }
@@ -169,6 +172,9 @@ struct sevirds
             {
                 total_susceptible += sum_state_vector(vaccinatedD1.at(age_group));
                 total_susceptible += sum_state_vector(vaccinatedD2.at(age_group));
+
+                for (unsigned int i = 0; i < boosters.size(); ++i)
+                    total_susceptible += sum_state_vector(boosters.at(i).at(age_group)) * age_group_proportions.at(age_group);
             }
         }
 
@@ -223,6 +229,20 @@ struct sevirds
         return total_vaccinatedD2;
     }
 
+    double get_total_boosted(int booster_num, int age_group=-1) const
+    {
+        double total_boosted = 0;
+
+        if (age_group == -1)
+        {
+            for (unsigned int i = 0; i < num_age_groups; ++i)
+                total_boosted += sum_state_vector(boosters.at(booster_num).at(i)) * age_group_proportions.at(i);
+        }
+        else
+            total_boosted = sum_state_vector(boosters.at(booster_num).at(age_group)) * age_group_proportions.at(age_group);
+        return  total_boosted;
+    }
+
     /**
      * @brief Gets the total of those exposed including those vaccinated
      * 
@@ -245,6 +265,9 @@ struct sevirds
                 {
                     total_exposed += sum_state_vector(exposedD1.at(i)) * age_group_proportions.at(i);
                     total_exposed += sum_state_vector(exposedD2.at(i)) * age_group_proportions.at(i);
+
+                    for (unsigned int j = 0; j < boosters_exposed.size(); ++j)
+                        total_exposed += sum_state_vector(boosters_exposed.at(j).at(i)) * age_group_proportions.at(i);
                 }
             }
         }
@@ -256,6 +279,9 @@ struct sevirds
             {
                 total_exposed += sum_state_vector(exposedD1.at(age_group));
                 total_exposed += sum_state_vector(exposedD2.at(age_group));
+
+                for (unsigned int j = 0; j < boosters_exposed.size(); ++j)
+                    total_exposed += sum_state_vector(boosters_exposed.at(j).at(age_group)) * age_group_proportions.at(age_group);
             }
         }
 
@@ -284,6 +310,8 @@ struct sevirds
                 {
                     total_infections += sum_state_vector(infectedD1.at(i)) * age_group_proportions.at(i);
                     total_infections += sum_state_vector(infectedD2.at(i)) * age_group_proportions.at(i);
+                    for (unsigned int j = 0; j < boosters_infected.size(); ++j)
+                        total_infections += sum_state_vector(boosters_infected.at(j).at(i)) * age_group_proportions.at(i);
                 }
             }
         }
@@ -295,6 +323,8 @@ struct sevirds
             {
                 total_infections += sum_state_vector(infectedD1.at(age_group));
                 total_infections += sum_state_vector(infectedD2.at(age_group));
+                for (unsigned int j = 0; j < boosters_infected.size(); ++j)
+                    total_infections += sum_state_vector(boosters_infected.at(j).at(age_group)) * age_group_proportions.at(age_group);
             }
         }
 
@@ -324,6 +354,8 @@ struct sevirds
                 {
                     total_recoveries += sum_state_vector(recoveredD1.at(i)) * age_group_proportions.at(i);
                     total_recoveries += sum_state_vector(recoveredD2.at(i)) * age_group_proportions.at(i);
+                    for (unsigned int j = 0; j < boosters_recovered.size(); ++j)
+                        total_recoveries += sum_state_vector(boosters_recovered.at(j).at(i)) * age_group_proportions.at(i);
                 }
             }
         }
@@ -335,6 +367,8 @@ struct sevirds
             {
                 total_recoveries += sum_state_vector(recoveredD1.at(age_group));
                 total_recoveries += sum_state_vector(recoveredD2.at(age_group));
+                for (unsigned int j = 0; j < boosters_recovered.size(); ++j)
+                    total_recoveries += sum_state_vector(boosters_recovered.at(j).at(age_group)) * age_group_proportions.at(age_group);
             }
         }
 
@@ -439,7 +473,23 @@ ostream &operator<<(ostream& os, const sevirds& sevirds)
     // Pipe all the data
     os << "<" << sevirds.population << "," << total_susceptible << "," << total_exposed << "," << total_vaccinatedD1
         << "," << total_vaccinatedD2 << "," << total_infected << "," << total_recovered << "," << new_exposed
-        << "," << new_infections << "," << new_recoveries << "," << total_fatalities << ">";
+        << "," << new_infections << "," << new_recoveries << "," << total_fatalities; 
+
+    if (sevirds.boosters.size() != 0)
+    {
+        os << ",";
+
+        double total_boosted;
+        for (unsigned int i = 0; i < sevirds.boosters.size(); ++i)
+        {
+            total_boosted = sevirds.precision_divider(sevirds.get_total_boosted(i));
+            os << total_boosted;
+
+            if (i + 1 < sevirds.boosters.size())
+                os << ",";
+        }
+    }
+    os << ">";
     return os;
 }
 
