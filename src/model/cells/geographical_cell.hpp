@@ -1,6 +1,6 @@
 // Created by binybrion - 06/29/20
 // Modified by Glenn    - 02/07/20
-// And by Eric          - June-July/2021
+// And by Eric          - Summer/2021
 
 #ifndef PANDEMIC_HOYA_2002_ZHONG_CELL_HPP
 #define PANDEMIC_HOYA_2002_ZHONG_CELL_HPP
@@ -223,12 +223,14 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
         } //local_computation()
 
         // It returns the delay to communicate cell's new state.
-        T output_delay(sevirds const &cell_state) const override { return 1; }
+        // It looks useless but it is extremely important. Do NOT delete!
+        T output_delay(sevirds const& cell_state) const override { return 1; }
 
         /**
          * @brief Vaccinated Dose 1 - Equation 1a
          * 
          * @param datas Vector containing the three population types and their data
+         * @param res State machine object that holds simulation config data
          * @return double
          */
         double new_vaccinated1(vector<unique_ptr<AgeData>>& datas, sevirds const& res) const
@@ -298,8 +300,8 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          * @brief Calculates proportion of new exposures from either non-vac or vac (dose 1 or 2) population.
          * 1b, 1c, 1d, 1e, 1f, 2b, 2c, 2d, 2e, 3a, 3b and 3c use this
          * 
-         * @param re: State machine object that holds simulation config data
-         * @param age_data Pointer to current simulation data
+         * @param res State machine object that holds simulation config data
+         * @param age_data Reference to current simulation data
          * @param q Index to compute equation
          * @return double
         */
@@ -321,8 +323,8 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             // jϵ{1...k}
             for (string neighbor : neighbors)
             {
-                sevirds const& nstate   = state.neighbors_state.at(neighbor);       // Cell j's state
-                vicinity const& v       = state.neighbors_vicinity.at(neighbor);    // Holds cij and a correction factor used in kij
+                sevirds const& nstate = state.neighbors_state.at(neighbor);       // Cell j's state
+                vicinity const& v     = state.neighbors_vicinity.at(neighbor);    // Holds cij and a correction factor used in kij
 
                 // Disobedient people have a correction factor of 1. The rest of the population is affected by the movement_correction_factor
                 neighbor_correction = nstate.disobedient
@@ -396,7 +398,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          * @brief Exposed: E(q), EV1(q), EV2(q)
          *  Advance all exposed forward a day, with some proportion leaving exposed(q-1) and entering infected(1)
          * 
-         * @param age_data Pointer to current simulation data for current age group (nvac, dose1, dose2) and age group
+         * @param age_data Reference to current simulation data for current age group (nvac, dose1, dose2) and age group
         */
         void increment_exposed(AgeData& age_data) const
         {
@@ -450,7 +452,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          * @brief Infectd: I(q), IV1(q), IV2(q)
          *  Advances all infected forward a day, with some already moved to fatalities or recovered prior
          * 
-         * @param age_data Pointer to current simulation data for current age group (nvac, dose1, dose2) and age group
+         * @param age_data Reference to current simulation data for current age group (nvac, dose1, dose2) and age group
          * @param recovered Vector of new recoveries from each day
         */
         void increment_infections(AgeData& age_data) const
@@ -510,7 +512,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          * @brief Infectd: R(q), RV1(q), RV2(q)
          *  Advances all infected forward a day, with some already moved to fatalities or recovered prior
          * 
-         * @param age_data Pointer to current simulation data for current age group (nvac, dose1, dose2) and age group
+         * @param age_data Reference to current simulation data for current age group (nvac, dose1, dose2) and age group
          * @param recovered_index If res-susc is turned on this will avoid processing the population on the last day
          * @param age_data_vac Pointer to a vaccinated age_data object that is used for R(q) and RV1(q)
          * @param res Used to get the minimum interval between doses needed in RV1(q)
@@ -548,7 +550,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          *  not vaccinated when in reality the maximum number of recoveries for dose1 is limited to those who are infected
          *  with dose 1 and still alive so we only want to remove those who are dose 1 fatality.
          *
-         * @param current_state State of the geographical cell (holds some global data)
+         * @param res State of the geographical cell (holds some global data)
          * @param age_data Contains the data of the proportion. In this function the infections proportion as well as
          *                  the fatality rates are used from here
          * @return double
@@ -576,8 +578,8 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             return new_f;
         }
 
-        double movement_correction_factor(const map<infection_threshold, mobility_correction_factor> &mobility_correction_factors,
-                                        double infectious_population, hysteresis_factor &hysteresisFactor) const
+        double movement_correction_factor(const map<infection_threshold, mobility_correction_factor>& mobility_correction_factors,
+                                        double infectious_population, hysteresis_factor& hysteresisFactor) const
         {
             // For example, assume a correction factor of "0.4": [0.2, 0.1]. If the infection goes above 0.4, then the
             // correction factor of 0.2 will now be applied to total infection values above 0.3, no longer 0.4 as the
@@ -593,7 +595,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             hysteresisFactor.in_effect = false;
 
             double correction = 1.0;
-            for (auto const &pair: mobility_correction_factors)
+            for (auto const& pair: mobility_correction_factors)
             {
                 if (infectious_population >= pair.first)
                 {
@@ -626,7 +628,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
         /**
          * @brief Computes all the equations specific to the vaccinated population
          * 
-         * @param datas List of AgeData objects containing current age group data
+         * @param datas Vector of AgeData objects containing current age group data
          * @param res The current state of the geographical cell
         */
         void compute_vaccinated(vector<unique_ptr<AgeData>>& datas, sevirds& res) const
@@ -648,8 +650,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                 for (unsigned int q = age_data_vac1.GetSusceptiblePhase(); q > 0; --q)
                 {
                     // 1b & 1d
-                    curr_vac1 = age_data_vac1.GetOrigSusceptible(q - 1) // V1(q - 1)
-                        ;
+                    curr_vac1 = age_data_vac1.GetOrigSusceptible(q - 1); // V1(q - 1)
 
                     age_data_vac1.SetNewExposed(q, new_exposed(res, age_data_vac1, q - 1));
                     curr_vac1 -= age_data_vac1.GetNewExposed(q); // - ( V1(q - 1) * (1 - iv1(q - 1)) * sum(1..k and 1...Ti) )
@@ -680,9 +681,8 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                 // 1d
                 if (reSusceptibility)
                 {
-                    double susc_from_rec = age_data_vac1.GetOrigRecoveredBack()                                                                                       // RV1(Tr)
-                                            * (1 - age_data_vac2.GetVaccinationRate(age_data_vac1.GetRecoveredPhase() - res.min_interval_recovery_to_vaccine)) // * (1 - vd2(Tr))
-                        ;
+                    double susc_from_rec = age_data_vac1.GetOrigRecoveredBack()                                                                             // RV1(Tr)
+                                        * (1 - age_data_vac2.GetVaccinationRate(age_data_vac1.GetRecoveredPhase() - res.min_interval_recovery_to_vaccine)); // * (1 - vd2(Tr))
                     age_data_vac1.AddSusceptibleBack(susc_from_rec);
                 }
 
@@ -711,8 +711,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
 
                 // 2c
                 double end = age_data_vac2.GetOrigSusceptible(age_data_vac2.GetSusceptiblePhase() - 1) // V2(td2 - 1)
-                      + age_data_vac2.GetOrigSusceptibleBack()                                         // V2(td2)
-                    ;
+                      + age_data_vac2.GetOrigSusceptibleBack();                                        // V2(td2)
 
                 age_data_vac2.SetNewExposed(age_data_vac2.GetSusceptiblePhase() - 1, new_exposed(res, age_data_vac2, age_data_vac2.GetSusceptiblePhase() - 1));
                 age_data_vac2.SetNewExposed(age_data_vac2.GetSusceptiblePhase(), new_exposed(res, age_data_vac2, age_data_vac2.GetSusceptiblePhase()));
@@ -798,8 +797,8 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          * @brief Basic check that the proportion is not
          * less then 0 or bigger then 1
          * 
-         * @param value   Proportion to check
-         * @param message Custom message to print when proportion fails checks
+         * @param value Proportion to check
+         * @param line  Line the function is called from (use __LINE__)
          */
         void sanity_check(double value, unsigned int line) const
         {
