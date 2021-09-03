@@ -127,7 +127,7 @@ try:
 
         out_str = "sim_time, S, E, VD1, VD2, I, R, New_E, New_I, New_R, D"
         for booster in range(0, num_boosters):
-            out_str += ", B" + str(booster)
+            out_str += ", B" + str(booster+1)
         out_str += "\n"
 
         # write the timeseries percent file inside stats/region_id

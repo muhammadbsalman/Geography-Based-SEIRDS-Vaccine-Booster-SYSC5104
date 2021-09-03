@@ -114,9 +114,9 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
 
         for booster in range(0, num_boosters):
             if booster in total_B:
-                total_B[booster] += round(cell_population*(curr_states[key][bIndex+booster]))
+                total_B[booster+1] += round(cell_population*(curr_states[key][bIndex+booster]))
             else:
-                total_B[booster] = round(cell_population*(curr_states[key][bIndex+booster]))
+                total_B[booster+1] = round(cell_population*(curr_states[key][bIndex+booster]))
 
         new_E += round(cell_population*(curr_states[key][neweIndex]))
         new_I += round(cell_population*(curr_states[key][newiIndex]))
@@ -132,7 +132,7 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
     percent_D   = total_D   / total_pop
 
     for booster in range(0, num_boosters):
-        percent_B[booster] = total_B[booster] / total_pop
+        percent_B[booster+1] = total_B[booster+1] / total_pop
 
     percent_new_E = new_E / total_pop
     percent_new_I = new_I / total_pop
@@ -143,7 +143,7 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
 
     array = [int(sim_time), percent_S, percent_E, percent_VD1, percent_VD2, percent_I, percent_R, percent_new_E, percent_new_I, percent_new_R, percent_D]
     for booster in range(0, num_boosters):
-        array.append(percent_B[booster])
+        array.append(percent_B[booster+1])
     array.append(psum)
     return array
 
@@ -210,14 +210,18 @@ try:
             raise error
 
         with open(base_name+"aggregate_timeseries.csv", 'w') as out_file:
-            out_file.write("sim_time, S, E, VD1, VD2, I, R, New_E, New_I, New_R, D, pop_sum\n")
+            out_str = "sim_time, S, E, VD1, VD2, I, R, New_E, New_I, New_R, D"
+            for booster in range(0, num_boosters):
+                out_str += ", booster" + str(booster+1)
+            out_str += ", pop_sum\n"
+            out_file.write(out_str)
             for timestep in data:
                 out_file.write(str(timestep).strip('[]')+"\n")
 
         columns = ["time", "susceptible", "exposed", "vaccinatedD1", "vaccinatedD2", "infected",
                     "recovered", "new_exposed", "new_infected", "new_recovered", "deaths"]
         for booster in range(0, num_boosters):
-            columns.append("booster"+str(booster))
+            columns.append("booster"+str(booster+1))
             COLOR_BOOSTERS[booster] = "#%06x" % random.randint(0, 0xFFFFFF)
             LINE_BOOSTERS[booster]  = random.choice(line_styles)
         columns.append("error")
@@ -247,7 +251,7 @@ try:
             ax.plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=line_styles[SOLID])
             ax.plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=line_styles[DASHED])
             for booster in range(0, num_boosters):
-                ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
+                ax.plot(x, 100*df_vis["booster"+str(booster+1)], label="Booster "+str(booster+1),
                         color=COLOR_BOOSTERS[booster],
                         linestyle=LINE_BOOSTERS[booster])
             plt.title("Epidemic Aggregate SEVIRD Percentages")
@@ -287,7 +291,7 @@ try:
             ax.plot(x, 100*df_vis["vaccinatedD1"], label="Vaccinated 1 Dose",  color=COLOR_DOSE1, linestyle=line_styles[SOLID])
             ax.plot(x, 100*df_vis["vaccinatedD2"], label="Vaccinated 2 Doses", color=COLOR_DOSE2, linestyle=line_styles[DASHED])
             for booster in range(0, num_boosters):
-                ax.plot(x, 100*df_vis["booster"+str(booster)], label="Booster "+str(booster+1),
+                ax.plot(x, 100*df_vis["booster"+str(booster+1)], label="Booster "+str(booster+1),
                         color=COLOR_BOOSTERS[booster],
                         linestyle=LINE_BOOSTERS[booster])
             plt.title("Epidemic Aggregate Vaccine Percentages")
