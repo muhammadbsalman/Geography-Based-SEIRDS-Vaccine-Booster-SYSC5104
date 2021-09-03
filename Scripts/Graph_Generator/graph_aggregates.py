@@ -113,7 +113,7 @@ def curr_states_to_df_row(sim_time, curr_states, total_pop, num_boosters):
         total_D   += round(cell_population*(curr_states[key][dIndex]))
 
         for booster in range(0, num_boosters):
-            if booster in total_B:
+            if booster+1 in total_B:
                 total_B[booster+1] += round(cell_population*(curr_states[key][bIndex+booster]))
             else:
                 total_B[booster+1] = round(cell_population*(curr_states[key][bIndex+booster]))
@@ -322,10 +322,10 @@ except KeyboardInterrupt as interrupt:
 
     print("\n\033[33mStopped by user\033[0m")
     sys.exit(-1)
-except Exception as error:
-    success = False
-    done = True
-    if progress:
-        t.join()
+# except Exception as error:
+#     success = False
+#     done = True
+#     if progress:
+#         t.join()
 
-    print("\n\033[31m" + str(error) + "\033[0m")
+#     print("\n\033[31m" + str(error) + "\033[0m")
