@@ -471,7 +471,7 @@ ostream &operator<<(ostream& os, const sevirds& sevirds)
     }
 
     // Pipe all the data
-    os << "<" << sevirds.population << "," << total_susceptible << "," << total_exposed << "," << total_vaccinatedD1
+    os << "<" <<sevirds.population<< "," << total_susceptible << "," << total_exposed << "," << total_vaccinatedD1
         << "," << total_vaccinatedD2 << "," << total_infected << "," << total_recovered << "," << new_exposed
         << "," << new_infections << "," << new_recoveries << "," << total_fatalities; 
 
@@ -532,7 +532,7 @@ void from_json(const nlohmann::json& json, sevirds& current_sevirds)
     json.at("immunityD2").get_to(current_sevirds.immunityD2_rate);
     json.at("min_interval_between_doses").get_to(current_sevirds.min_interval_doses);
     json.at("min_interval_between_recovery_and_vaccine").get_to(current_sevirds.min_interval_recovery_to_vaccine);
-
+    
     try
     {
         vector<vector<double>> buf;
@@ -541,6 +541,7 @@ void from_json(const nlohmann::json& json, sevirds& current_sevirds)
         {
             json.at("booster"+to_string(i)).get_to(buf);
             current_sevirds.boosters.push_back(buf);
+            
             try
             {
                 json.at("exposedB"+to_string(i)).get_to(buf);

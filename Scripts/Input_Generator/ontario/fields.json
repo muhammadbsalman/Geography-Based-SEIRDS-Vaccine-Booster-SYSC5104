@@ -10,6 +10,7 @@
         "New Exposed",
         "New Infected",
         "New Recovered",
-        "Deaths"
+        "Deaths",
+        "VaccinatedB"
     ]
 }

@@ -298,7 +298,10 @@ Main()
     rm -f Scripts/Msg_Log_Parser/*.zip
     cp cadmium_gis/${AREA}/${AREA}.geojson $VISUALIZATION_DIR
     cp cadmium_gis/${AREA}/visualization.json $VISUALIZATION_DIR
+    rm -rf backup/ #added
+    cp -R logs/ backup/
     mv logs $VISUALIZATION_DIR
+    rm -rf bin/ #added
 
     BuildTime "Simulation"
     echo -e "View results using the files in ${BOLD}${BLUE}${VISUALIZATION_DIR}${RESET} and this web viewer: ${BOLD}${BLUE}http://206.12.94.204:8080/arslab-web/1.3/app-gis-v2/index.html${RESET}"
