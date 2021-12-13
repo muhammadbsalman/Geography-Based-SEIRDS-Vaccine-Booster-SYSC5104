@@ -311,7 +311,7 @@ else
     WALL="N"
     PROFILE="N"
     NAME=""
-    DAYS="500"
+    DAYS="100" #changed here
     GRAPH_REGIONS="N"
     GENERATE="N"
     BUILD_TYPE="Release"

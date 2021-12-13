@@ -95,7 +95,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             recovery_rates   = move(config.recovery_rates);
             mobility_rates   = move(config.mobility_rates);
             fatality_rates   = move(config.fatality_rates);
-
+            
             // Multiplication is always faster then division so set this up to be 1/prec_divider to be multiplied later
             reSusceptibility  = config.reSusceptibility;
             age_segments = initial_state.get_num_age_segments();
@@ -637,6 +637,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
 
             AgeData& age_data_vac1 = *(datas.at(VAC1).get());
             AgeData& age_data_vac2 = *(datas.at(VAC2).get());
+            AgeData& age_data_boos = *(datas.at(BOOS).get()); //added
 
             // Holds those who get their second dose earlier from the susceptible dose 1 group
             // This is not the same as vacFromRec in AgeData.hpp
