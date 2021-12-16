@@ -303,7 +303,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
          * @param res Current state of the cell
          * @return double
          */
-        double new_vaccinatedB(vector<unique_ptr<AgeData>>& datas, sevirds& res) const
+        double new_vaccinatedB(vector<unique_ptr<AgeData>>& datas, sevirds& res, vecDouble const& earlyBoos) const
         {
             AgeData& age_data_vac2 = *(datas.at(VAC2)).get();
             AgeData& age_data_boos = *(datas.at(BOOS)).get();
@@ -315,7 +315,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             // and this was already computed ealier in compute_vaccinated()
             // qϵ{mtd1...td1 - 1}
             //NEED TO IMPLEMENT
-            //vacB += accumulate(earlyVacB.begin(), earlyVacB.end(), 0.0);
+            booster += accumulate(earlyBoos.begin(), earlyBoos.end(), 0.0);
 
             // Some people are eligible to receive their second dose sooner from the dose 2 recovery pop
             // qϵ{mtd1...Tr}
@@ -680,6 +680,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             // Holds those who get their second dose earlier from the susceptible dose 1 group
             // This is not the same as vacFromRec in AgeData.hpp
             vecDouble earlyVac2(age_data_vac1.GetSusceptiblePhase(), 0.0);
+            vecDouble earlyBoos(age_data_vac1.GetSusceptiblePhase(), 0.0);
 
             // <VACCINATED DOSE 1>
                 // Calculate the number of new vaccinated dose 1
@@ -743,14 +744,31 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
 
                     age_data_vac2.SetNewExposed(q, new_exposed(res, age_data_vac2, q - 1));
                     curr_vac2 -= age_data_vac2.GetNewExposed(q); // - V2(q - 1) * (1 - iv2(q - 1)) * sum( jϵ{1…k}(cij * kij * sum(bϵ{1...A} and nϵ{1...Ti}[...])) )
+                    
+                    // Early booster
+                    if (q > res.min_interval_doses)
+                    {
+                        // 1d
+                        if (q > res.min_interval_recovery_to_vaccine)
+                            earlyBoos.at(q - 1) = age_data_boos.GetVaccinationRate(q - 1 - res.min_interval_recovery_to_vaccine) // vdB(q - 1)
+                                                * age_data_vac2.GetOrigSusceptible(q - 1)                                        // * V2(q - 1)
+                            ;
+                        // 1c substracts early booster vaccinations from 1b
+                        else
+                            earlyBoos.at(q - 1) = age_data_boos.GetVaccinationRate(q - 1 - res.min_interval_doses) // vdB(q - 1)
+                                                * age_data_vac2.GetOrigSusceptible(q - 1)                          // * V2(q - 1)
+                            ;
 
+                        curr_vac2 -= earlyBoos.at(q - 1);
+                    }
+                    
                     sanity_check(curr_vac2, __LINE__);
                     age_data_vac2.SetSusceptible(q, curr_vac2);
                 }
-
+                /*//OLD
                 // 2c //remove last day
                 double end = age_data_vac2.GetOrigSusceptible(age_data_vac2.GetSusceptiblePhase() - 1); // V2(td2 - 1)
-                      //+ age_data_vac2.GetOrigSusceptibleBack();                                        // V2(td2)*/
+                      //+ age_data_vac2.GetOrigSusceptibleBack();                                        // V2(td2)
                 
 
                 age_data_vac2.SetNewExposed(age_data_vac2.GetSusceptiblePhase() - 1, new_exposed(res, age_data_vac2, age_data_vac2.GetSusceptiblePhase() - 1));
@@ -764,13 +782,24 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                 sanity_check(end, __LINE__);
                 age_data_vac2.SetSusceptible(age_data_vac2.GetSusceptiblePhase(), end);
                 age_data_vac2.SetSusceptible(0, new_vac2); // Set the first day of the phase
+                sanity_check(age_data_vac2.GetTotalSusceptible(), __LINE__);*/
+                
+                if (reSusceptibility)
+                {
+                    double susc_from_rec = age_data_vac2.GetOrigRecoveredBack()                                                                             // RV2(Tr)
+                                        * (1 - age_data_boos.GetVaccinationRate(age_data_vac2.GetRecoveredPhase() - res.min_interval_recovery_to_vaccine)); // * (1 - vdB(Tr))
+                    age_data_vac2.AddSusceptibleBack(susc_from_rec);
+                }
+
+                // Set the new dose1 proportion to the beginning of the phase
+                age_data_vac2.SetSusceptible(0, new_vac2);
                 sanity_check(age_data_vac2.GetTotalSusceptible(), __LINE__);
             // </VACCINATED DOSE 2>
             
             // <BOOSTER>
             
                 // Calculate the number of new vaccinated booster, need to implement earlyBoos, 3a
-                double new_boos = new_vaccinatedB(datas, res);
+                double new_boos = new_vaccinatedB(datas, res, earlyBoos);
                 sanity_check(new_boos, __LINE__);
                 //std::cout<<new_boos<<endl;
                 // qϵ{2...td2 - 1}
@@ -803,7 +832,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                 //std::cout<<last_day_boos<<endl;
                 age_data_boos.SetSusceptible(age_data_boos.GetSusceptiblePhase(), last_day_boos);
                 age_data_boos.SetSusceptible(0, new_boos); // Set the first day of the phase
-                //sanity_check(age_data_boos.GetTotalSusceptible(), __LINE__);
+                sanity_check(age_data_boos.GetTotalSusceptible(), __LINE__);
         }
 
         /**
@@ -821,8 +850,8 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             {
                 AgeData& age_data = *(age_data_ptr.get());
 
-                if (age_data.GetType() == AgeData::PopType::BOOSTER)
-                    continue; // TODO: Handle booster shots
+                //if (age_data.GetType() == AgeData::PopType::BOOSTER)
+                    //continue; // TODO: Handle booster shots
 
                 // <FATALITIES>
                     // Calculates the new fatalities on each day of the infected phase
