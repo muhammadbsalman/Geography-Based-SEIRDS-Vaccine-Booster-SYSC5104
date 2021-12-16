@@ -52,7 +52,7 @@
 			"layer": "PHU",
 			"fill": {
 				"type":"equivalent",
-				"property": "VaccinatedD1",
+				"property": "VaccinatedD2",
 				"colors":["rgba(104, 13, 90,0.6)","rgba(104, 13, 90,0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.90)"]
 			},
 			"stroke": {
@@ -114,6 +114,19 @@
 				"type":	"static",
 				"width":	1,
 				"color":	"rgba(0,0,0,1)"
+			}
+		},
+		{"name": "VaccinatedB",
+			"layer": "PHU",
+			"fill": {
+				"type":"equivalent",
+				"property": "VaccinatedB",
+				"colors":["rgba(104, 13, 90,0.6)","rgba(104, 13, 90,0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.90)"]
+			},
+			"stroke": {
+				"type": "static",
+				"width": 1,
+				"color": "rgba(0,0,0,1)"
 			}
 		}]
 }

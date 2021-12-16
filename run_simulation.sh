@@ -298,8 +298,6 @@ Main()
     rm -f Scripts/Msg_Log_Parser/*.zip
     cp cadmium_gis/${AREA}/${AREA}.geojson $VISUALIZATION_DIR
     cp cadmium_gis/${AREA}/visualization.json $VISUALIZATION_DIR
-    rm -rf backup/ #added
-    cp -R logs/ backup/
     mv logs $VISUALIZATION_DIR
     rm -rf bin/ #added
 
