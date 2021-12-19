@@ -310,12 +310,9 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             // Everybody on the last day of dose 2 is moved to booster
             double booster = age_data_vac2.GetOrigSusceptibleBack(); // V2(td2)
 
-            // Some people are eligible to receive their second dose sooner
-            // and this was already computed ealier in compute_vaccinated()
-            // qϵ{mtd1...td1 - 1}
             booster += accumulate(earlyBoos.begin(), earlyBoos.end(), 0.0);
-
-            // Some people are eligible to receive their second dose sooner from the dose 2 recovery pop
+            
+            // Some people are eligible to receive their booster sooner from the dose 2 recovery pop
             // qϵ{mtd1...Tr}
             for (unsigned int q = age_data_vac2.GetRecoveredPhase(); q > res.min_interval_recovery_to_vaccine; --q)
             {
@@ -694,6 +691,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                     curr_vac1 -= age_data_vac1.GetNewExposed(q); // - ( V1(q - 1) * (1 - iv1(q - 1)) * sum(1..k and 1...Ti) )
 
                     // Early dose 2
+                    //std::cout<<"THIS IS Q: "<<q<<endl<<"this is res: "<<res.min_interval_doses<<endl;
                     if (q > res.min_interval_doses)
                     {
                         // 1d
@@ -743,7 +741,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                     age_data_vac2.SetNewExposed(q, new_exposed(res, age_data_vac2, q - 1));
                     curr_vac2 -= age_data_vac2.GetNewExposed(q); // - V2(q - 1) * (1 - iv2(q - 1)) * sum( jϵ{1…k}(cij * kij * sum(bϵ{1...A} and nϵ{1...Ti}[...])) )
                     // Early booster
-                    if (q > res.min_interval_doses)
+                    /*if (q > res.min_interval_doses)
                     {
                         // 1d
                         if (q > res.min_interval_recovery_to_vaccine)
@@ -757,13 +755,13 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                             ;
 
                         curr_vac2 -= earlyBoos.at(q - 1);
-                    }
+                    }*/
                     sanity_check(curr_vac2, __LINE__);
                     age_data_vac2.SetSusceptible(q, curr_vac2);
                 }
 
-                /*// 2c
-                double end = age_data_vac2.GetOrigSusceptible(age_data_vac2.GetSusceptiblePhase() - 1) // V2(td2 - 1)
+                // 2c
+                /*double end = age_data_vac2.GetOrigSusceptible(age_data_vac2.GetSusceptiblePhase() - 1) // V2(td2 - 1)
                       + age_data_vac2.GetOrigSusceptibleBack();                                        // V2(td2)
 
                 age_data_vac2.SetNewExposed(age_data_vac2.GetSusceptiblePhase() - 1, new_exposed(res, age_data_vac2, age_data_vac2.GetSusceptiblePhase() - 1));
@@ -772,16 +770,17 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                 end -= age_data_vac2.GetNewExposed(age_data_vac2.GetSusceptiblePhase());     // - V2(td2) * (1 - iV2(td2)) * sum( jϵ{1...k}(cij * kij * sum(bϵ{1...A} and nϵ{1...Ti}[...]) )
 
                 if (reSusceptibility)
-                    end += age_data_vac2.GetOrigRecoveredBack(); // + RV2(Tr)
+                    end += age_data_vac2.GetOrigRecoveredBack(); // + RV2(Tr)*/
 
-                sanity_check(end, __LINE__);
-                age_data_vac2.SetSusceptible(age_data_vac2.GetSusceptiblePhase(), end);*/
                 if (reSusceptibility)
                 {
                     double susc_from_rec_vac2 = age_data_vac2.GetOrigRecoveredBack()                                                                        // RV2(Tr)
                                         * (1 - age_data_boos.GetVaccinationRate(age_data_vac2.GetRecoveredPhase() - res.min_interval_recovery_to_vaccine)); // * (1 - vdB(Tr))
-                    age_data_boos.AddSusceptibleBack(susc_from_rec_vac2);
+                    //age_data_vac2.AddSusceptibleBack(susc_from_rec_vac2);
+                    age_data_vac2.SetSusceptible(age_data_vac2.GetSusceptiblePhase(), susc_from_rec_vac2);
                 }
+                //sanity_check(end, __LINE__);
+                //age_data_vac2.SetSusceptible(age_data_vac2.GetSusceptiblePhase(), end);
                 age_data_vac2.SetSusceptible(0, new_vac2); // Set the first day of the phase
                 sanity_check(age_data_vac2.GetTotalSusceptible(), __LINE__);
             // </VACCINATED DOSE 2>
