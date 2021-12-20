@@ -1,24 +1,40 @@
 {
-	"playback":{
-		"speed":5,
-		"loop":false,
-		"cache":10
-	},
-	"basemap":	"openstreetmap",
-	"view":	{
-		"center":	[-75.7, 52.3],
-		"zoom":	5
-	},
-	"layers":	[{
-			"id":	"PHU",
-			"type":	"polygon",
-			"file":	"ontario.geojson",
-			"label": "Ottawa PHUs SEIRD",
-			"style": "default",
-			"model": "pandemic",
-			"join":	"PHU_ID"
-		}],
-	"simulation":	[{
+    "playback": {
+        "speed": 15,
+        "loop": true,
+        "cache": 10
+    },
+    "gis": {
+        "basemap": "openstreetmap",
+        "view": {
+			"center":	[-75.7, 52.3],
+			"zoom":	5
+        },
+        "layers": [{
+                "id": "PHU",
+                "type": "polygon",
+                "file": "ontario.geojson",
+                "fields": ["FID", "OGF_ID", "PHU_ID", "NAME_ENG", "NAME_FR", "GEO_UPD_DT", "EFF_DATE"],
+                "label": "Ontario PHU",
+                "style": "default",
+                "join": "PHU_ID"
+            }
+        ],
+        "styles": [{
+                "id": "default",
+                "fill": {
+                    "type": "static",
+                    "color": "rgba(200,200,200,0.7)"
+                },
+                "stroke": {
+                    "type": "static",
+                    "width": 1,
+                    "color": "rgba(0,0,0,1)"
+                }
+            }
+        ],
+        "variables": [
+        {
 			"name":	"Susceptible",
 			"layer":	"PHU",
 			"fill":	{
@@ -33,6 +49,7 @@
 				"color":	"rgba(0,0,0,1)"
 			}
 		},
+		
 		{
 			"name": "VaccinatedD1",
 			"layer": "PHU",
@@ -102,31 +119,38 @@
 				"color":	"rgba(0,0,0,1)"
 			}
 		},
-		{
-			"name":	"Deaths",
-			"layer":	"PHU",
-			"fill":	{
-				"type":	"quantile",
-				"property":	"Deaths",
-				"colors":["rgba(216, 222, 233, 0.6)","rgba(189, 194, 204, 0.85)","rgba(147, 169, 178, 0.85)","rgba(126, 145, 153, 0.85)","rgba(105, 120, 127, 0.85)","rgba(88, 73, 89, 0.85)","rgba(63, 52, 63, 0.85)","rgba(38, 31, 31, 0.90)"]
-			},
-			"stroke":	{
-				"type":	"static",
-				"width":	1,
-				"color":	"rgba(0,0,0,1)"
-			}
-		},
-		{"name": "VaccinatedB",
-			"layer": "PHU",
-			"fill": {
-				"type":"equivalent",
-				"property": "VaccinatedB",
-				"colors":["rgba(104, 13, 90,0.6)","rgba(104, 13, 90,0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.85)","rgba(104, 13, 90, 0.90)"]
-			},
-			"stroke": {
-				"type": "static",
-				"width": 1,
-				"color": "rgba(0,0,0,1)"
-			}
-		}]
+        
+        
+        
+        {
+                "name": "Deaths",
+                "layer": "PHU",
+                "fill": {
+                    "type": "quantile",
+                    "property": "Deaths",
+                    "zero": "rgba(255,255,255,0.8)",
+                    "colors": ["rgba(254,229,217,0.8)", "rgba(252,187,161,0.8)", "rgba(252,146,114,0.8)", "rgba(251,106,74,0.8)", "rgba(222,45,38,0.8)", "rgba(165,15,21,0.8)"]
+                },
+                "stroke": {
+                    "type": "static",
+                    "width": 1,
+                    "color": "rgba(0,0,0,1)"
+                }
+            }, {
+                "name": "VaccinatedB",
+                "layer": "PHU",
+                "fill": {
+                    "type": "equivalent",
+                    "property": "VaccinatedB",
+                    "zero": "rgba(255,255,255,0.8)",
+                    "colors": ["rgba(254,229,217,0.8)", "rgba(252,187,161,0.8)", "rgba(252,146,114,0.8)", "rgba(251,106,74,0.8)", "rgba(222,45,38,0.8)", "rgba(165,15,21,0.8)"]
+                },
+                "stroke": {
+                    "type": "static",
+                    "width": 1,
+                    "color": "rgba(0,0,0,1)"
+                }
+            }
+        ]
+    }
 }

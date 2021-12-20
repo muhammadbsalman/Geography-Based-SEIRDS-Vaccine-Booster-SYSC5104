@@ -53,3 +53,9 @@ On Windows use `Get-Help .\RunSimulation.ps1` and `./RunSimulation.sh -h` on Lin
 Viewing Results in GIS Web Viewer V2
 ---
 When a simulation completes the results folder will contain a logs folder, with graphs, and 4 files: .geojson, messages.log, structure.json, and visualization.json. Upload these 4 to the  [GIS_Viewer](http://206.12.94.204:8080/arslab-web/1.3/app-gis-v2/index.html) to view simulation results on a map of the region
+
+---
+Edit*: The GIS Viewer mentioned above does not currently work. Please use this link instead: https://staubibr.github.io/app-embed/index.html
+Note: Only the .sh file currently supports generating files for the new viewer, for only the province of Ontario.
+The booster repository was ONLY tested and verified for Ontario.
+We integrated another python script to generate the output messages.log to view the output results.

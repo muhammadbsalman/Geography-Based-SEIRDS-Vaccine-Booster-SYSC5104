@@ -281,13 +281,15 @@ Main()
     mkdir -p Scripts/Msg_Log_Parser/output
     cp config/scenario_${INPUT_DIR}.json Scripts/Msg_Log_Parser/input
     cp logs/pandemic_messages.txt Scripts/Msg_Log_Parser/input
+    cp logs/pandemic_state.txt Scripts/Msg_Log_Parser/input
 
     # Run the message log parser
     echo; echo "Prepping GIS Viewer Files"
     cd Scripts/Msg_Log_Parser
-    java -jar sim.converter.glenn.jar "input" "output" > log 2>&1
+    #java -jar sim.converter.glenn.jar "input" "output" > log 2>&1
+    python main.py --scenario ./input/scenario_${INPUT_DIR}.json --state ./input/pandemic_state.txt --fields Population Susceptible Exposed VaccinatedD1 VaccinatedD2 Infected Recovered NewExposed NewInfected NewRecovered Deaths VaccinatedB
     ErrorCheck $? log # Check for build errors
-    unzip "output\pandemic_messages.zip" -d output
+    #unzip "output\pandemic_messages.zip" -d output
     cd $HOME_DIR
 
     # Copy the converted message logs to GIS Web Viewer Folder
@@ -299,7 +301,7 @@ Main()
     cp cadmium_gis/${AREA}/${AREA}.geojson $VISUALIZATION_DIR
     cp cadmium_gis/${AREA}/visualization.json $VISUALIZATION_DIR
     mv logs $VISUALIZATION_DIR
-    rm -rf bin/ #added
+    rm -rf bin/ #Allows the directory to be rebuilt each time
 
     BuildTime "Simulation"
     echo -e "View results using the files in ${BOLD}${BLUE}${VISUALIZATION_DIR}${RESET} and this web viewer: ${BOLD}${BLUE}http://206.12.94.204:8080/arslab-web/1.3/app-gis-v2/index.html${RESET}"

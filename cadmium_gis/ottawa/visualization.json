@@ -4,6 +4,7 @@
 		"loop":false,
 		"cache":10
 	},
+"gis": {
 	"basemap":	"openstreetmap",
 	"view":	{
 		"center":	[-75.7, 45.3],
@@ -18,7 +19,20 @@
 			"model": "pandemic",
 			"join":	"dauid"
 		}],
-	"simulation":	[{
+		        "styles": [{
+                "id": "default",
+                "fill": {
+                    "type": "static",
+                    "color": "rgba(200,200,200,0.7)"
+                },
+                "stroke": {
+                    "type": "static",
+                    "width": 1,
+                    "color": "rgba(0,0,0,1)"
+                }
+            }
+        ],
+	"variables":	[{
 			"name":	"Susceptible",
 			"layer":	"DA",
 			"fill":	{
@@ -61,7 +75,7 @@
 			"layer": "DA",
 			"fill": {
 				"type": "equivalent",
-				"property": "VaccinatedD1",
+				"property": "VaccinatedD2",
 				"colors": [
 					"rgba(104, 13, 90,0.6)",
 					"rgba(104, 13, 90,0.85)",
@@ -134,4 +148,4 @@
 				"color":	"rgba(0,0,0,1)"
 			}
 		}]
-}
+}}
