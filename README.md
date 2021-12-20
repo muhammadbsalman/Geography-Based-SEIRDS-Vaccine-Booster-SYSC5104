@@ -17,7 +17,7 @@ Requirements
 Cloning Repo
 ---
 To clone this repository:
-git clone https://github.com/muhammadbsalman/Geography-Based-SEIRDS-Vaccine-Booster-SYSC5104.git
+* `git clone https://github.com/muhammadbsalman/Geography-Based-SEIRDS-Vaccine-Booster-SYSC5104.git`
 
 Downloading Conda
 ---
