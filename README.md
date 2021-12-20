@@ -1,8 +1,8 @@
 Cell-DEVS Geographical SEVIRDS-Booster Pandemic Model
 ===
 Overview
-Latest Booster Equations added by Muhammad Salman in geographical_cell.hpp, as well as booster variables in defaults.json for Ontario.
 ----
+Latest Booster Equations added by Muhammad Salman in geographical_cell.hpp, as well as booster variables in defaults.json for Ontario.
 <br>_Follow below for steps on just running the simulator. Consult the [Wiki](https://github.com/SimulationEverywhere-Models/Geography-Based-SEIRDS-Vaccinated/wiki) for compiling and running it_
 
 Requirements
