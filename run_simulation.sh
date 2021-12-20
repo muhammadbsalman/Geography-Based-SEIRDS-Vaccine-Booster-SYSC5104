@@ -287,7 +287,7 @@ Main()
     echo; echo "Prepping GIS Viewer Files"
     cd Scripts/Msg_Log_Parser
     #java -jar sim.converter.glenn.jar "input" "output" > log 2>&1
-    python main.py --scenario ./input/scenario_${INPUT_DIR}.json --state ./input/pandemic_state.txt --fields Population Susceptible Exposed VaccinatedD1 VaccinatedD2 Infected Recovered NewExposed NewInfected NewRecovered Deaths VaccinatedB
+    python3 main.py --scenario ./input/scenario_${INPUT_DIR}.json --state ./input/pandemic_state.txt --fields Population Susceptible Exposed VaccinatedD1 VaccinatedD2 Infected Recovered NewExposed NewInfected NewRecovered Deaths VaccinatedB
     ErrorCheck $? log # Check for build errors
     #unzip "output\pandemic_messages.zip" -d output
     cd $HOME_DIR
