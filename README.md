@@ -1,4 +1,5 @@
 Cell-DEVS Geographical SEVIRDS-Booster Pandemic Model
+Latest Booster Equations added by Muhammad Salman in geographical_cell.hpp, as well as booster variables in defaults.json for Ontario.
 ===
 Overview
 ----
