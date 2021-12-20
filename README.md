@@ -2,8 +2,6 @@ Cell-DEVS Geographical SEVIRDS-Booster Pandemic Model
 ===
 Overview
 ----
-This model is an extension of a previous [SEVIRDS model](https://github.com/muhammadbsalman/Geography-Based-SEIRDS-Vaccine-Booster-SYSC5104) and
-is based on the [Zhong model](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7088542/pdf/11430_2009_Article_44.pdf).
 <br>_Follow below for steps on just running the simulator. Consult the [Wiki](https://github.com/SimulationEverywhere-Models/Geography-Based-SEIRDS-Vaccinated/wiki) for compiling and running it_
 
 Requirements
@@ -14,6 +12,11 @@ Requirements
 * [Python 3](https://www.python.org/downloads/) (`sudo apt install python3` - **Linux**)
 * [Java Runtime Environment](https://www.oracle.com/java/technologies/javase-downloads.html) (`sudo apt install default-jre` - **Linux**)
 * [CMake](https://cmake.org/download/) (`sudo apt install cmake` - **Linux**)
+
+Cloning Repo
+---
+To clone this repository:
+git clone https://github.com/muhammadbsalman/Geography-Based-SEIRDS-Vaccine-Booster-SYSC5104.git
 
 Downloading Conda
 ---
