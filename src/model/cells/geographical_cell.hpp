@@ -673,7 +673,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
             AgeData& age_data_vac2 = *(datas.at(VAC2).get());
             AgeData& age_data_boos = *(datas.at(BOOS).get());
 
-            // Holds those who get their second dose earlier from the susceptible dose 1 group and booster from susceptible dose 2
+            // Holds those who get their second dose earlier from the susceptible dose 1 group, and booster from susceptible dose 2 group
             // This is not the same as vacFromRec in AgeData.hpp
             vecDouble earlyVac2(age_data_vac1.GetSusceptiblePhase(), 0.0);
             vecDouble earlyBoos(age_data_vac2.GetSusceptiblePhase(), 0.0);
@@ -804,7 +804,7 @@ class geographical_cell : public cell<T, string, sevirds, vicinity>
                   last_day_boos+= age_data_boos.GetOrigRecoveredBack(); // + RVB(Tr)
 
                 sanity_check(last_day_boos, __LINE__);
-                age_data_boos.SetSusceptible(age_data_boos.GetSusceptiblePhase(), last_day_boos);
+                age_data_boos.SetSusceptible(age_data_boos.GetSusceptiblePhase(), last_day_boos); //Set last day of booster phase
                 age_data_boos.SetSusceptible(0, new_boos); // Set the first day of the phase
                 sanity_check(age_data_boos.GetTotalSusceptible(), __LINE__);
             // </BOOSTER>
