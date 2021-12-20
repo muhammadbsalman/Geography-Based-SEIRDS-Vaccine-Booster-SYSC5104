@@ -40,7 +40,7 @@ If you see a lot of `←[033m` being printed in the shell, then PowerShell doesn
 2. Now restart the shell
 3. Navigate back to SEVIRDS.
 4. `conda activate geo_env`
-5. `.\RunRimulation.ps1 -GenScenario ontario`
+5. `.\run_simulation.ps1 -GenScenario ontario`
 
 You should see the progress meters and loading animations in color and not like `←[033m`
 
@@ -48,11 +48,11 @@ Running a Simulation
 ----
 1. Extract the .zip folder and an open a terminal there (PowerShell 7 on **Windows**)
 3. Enter the following command (based on the appropriate OS)
-   * `./RunSimulation.sh -a=ontario`
-   * `.\RunSimulation.ps1 ontario`
+   * `./run_simulation.sh -a=ontario`
+   * `.\run_simulation.ps1 ontario`
 4. If it completes you can view the results using the path displayed in the terminal
   
-On Windows use `Get-Help .\RunSimulation.ps1` and `./RunSimulation.sh -h` on Linux to get more details on flags and parameters
+On Windows use `Get-Help .\run_simulation.ps1` and `./run_simulation.sh -h` on Linux to get more details on flags and parameters
 
 Viewing Results in GIS Web Viewer V2
 ---
